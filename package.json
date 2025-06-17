@@ -1,0 +1,18 @@
+{
+  "name": "mailblock",
+  "version": "0.0.1",
+  "description": "Reserved package name for the Mailblock email SDK.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "email",
+    "sdk",
+    "mailblock",
+    "cold-email"
+  ],
+  "author": "Block Forge",
+  "license": "MIT",
+  "type": "module"
+}

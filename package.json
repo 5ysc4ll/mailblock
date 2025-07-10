@@ -1,6 +1,6 @@
 {
   "name": "mailblock",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Reserved package name for the Mailblock email SDK.",
   "main": "index.js",
   "scripts": {

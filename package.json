@@ -14,5 +14,11 @@
   ],
   "author": "Block Forge",
   "license": "MIT",
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "claude": "^0.1.1",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.2"
+  }
 }

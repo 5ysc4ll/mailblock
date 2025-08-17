@@ -1,5 +1,7 @@
 export interface EmailOptions {
-  to: string;
+  to: string | string[];
+  cc?: string | string[];
+  bcc?: string | string[];
   from: string;
   subject: string;
   text?: string;
@@ -27,7 +29,9 @@ export interface EmailResponse {
 }
 
 export class EmailBuilder {
-  to(email: string): EmailBuilder;
+  to(emails: string | string[]): EmailBuilder;
+  cc(emails: string | string[]): EmailBuilder;
+  bcc(emails: string | string[]): EmailBuilder;
   from(email: string): EmailBuilder;
   subject(subject: string): EmailBuilder;
   text(content: string): EmailBuilder;

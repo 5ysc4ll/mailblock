@@ -4,11 +4,22 @@ class EmailBuilder {
     this.emailData = {};
   }
 
-  to(email) {
-    if (!this._isValidEmail(email)) {
-      throw new Error(`Invalid 'to' email address: ${email}`);
+  to(emails) {
+    this.emailData.to = this._validateEmailOrArray(emails, 'to');
+    return this;
+  }
+
+  cc(emails) {
+    if (emails !== undefined) {
+      this.emailData.cc = this._validateEmailOrArray(emails, 'cc');
     }
-    this.emailData.to = email;
+    return this;
+  }
+
+  bcc(emails) {
+    if (emails !== undefined) {
+      this.emailData.bcc = this._validateEmailOrArray(emails, 'bcc');
+    }
     return this;
   }
 
@@ -79,6 +90,30 @@ class EmailBuilder {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   }
+
+  _validateEmailOrArray(emails, fieldName) {
+    if (typeof emails === 'string') {
+      if (!this._isValidEmail(emails)) {
+        throw new Error(`Invalid '${fieldName}' email address: ${emails}`);
+      }
+      return emails;
+    }
+    
+    if (Array.isArray(emails)) {
+      if (emails.length === 0) {
+        throw new Error(`${fieldName} array cannot be empty`);
+      }
+      
+      for (const email of emails) {
+        if (typeof email !== 'string' || !this._isValidEmail(email)) {
+          throw new Error(`Invalid '${fieldName}' email address: ${email}`);
+        }
+      }
+      return emails;
+    }
+    
+    throw new Error(`${fieldName} must be a string or array of strings`);
+  }
 }
 
 class Mailblock {
@@ -116,7 +151,7 @@ class Mailblock {
     return new EmailBuilder(this);
   }
 
-  async sendEmail({ to, from, subject, text, html, scheduledAt }) {
+  async sendEmail({ to, cc, bcc, from, subject, text, html, scheduledAt }) {
     const requestId = this._generateRequestId();
     const startTime = Date.now();
     const timestamp = new Date().toISOString();
@@ -172,23 +207,12 @@ class Mailblock {
       };
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(to)) {
+    // Validate email addresses
+    const emailValidation = this._validateEmailFields({ to, cc, bcc, from });
+    if (!emailValidation.isValid) {
       return {
         success: false,
-        error: `Invalid recipient email address: ${to}`,
-        errorType: "VALIDATION_ERROR",
-        statusCode: null,
-        requestId,
-        timestamp,
-        duration: Date.now() - startTime
-      };
-    }
-
-    if (!emailRegex.test(from)) {
-      return {
-        success: false,
-        error: `Invalid sender email address: ${from}`,
+        error: emailValidation.error,
         errorType: "VALIDATION_ERROR",
         statusCode: null,
         requestId,
@@ -203,6 +227,8 @@ class Mailblock {
       subject,
       ...(text && { text }),
       ...(html && { html }),
+      ...(cc && { cc }),
+      ...(bcc && { bcc }),
     };
 
     if (scheduledAt) {
@@ -338,6 +364,54 @@ class Mailblock {
       default:
         return 'Please try again or contact support if the issue persists';
     }
+  }
+
+  _validateEmailFields({ to, cc, bcc, from }) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    // Helper to validate single email or array
+    const validateEmailOrArray = (emails, fieldName) => {
+      if (typeof emails === 'string') {
+        if (!emailRegex.test(emails)) {
+          return { isValid: false, error: `Invalid ${fieldName} email address: ${emails}` };
+        }
+      } else if (Array.isArray(emails)) {
+        if (emails.length === 0) {
+          return { isValid: false, error: `${fieldName} array cannot be empty` };
+        }
+        for (const email of emails) {
+          if (typeof email !== 'string' || !emailRegex.test(email)) {
+            return { isValid: false, error: `Invalid ${fieldName} email address: ${email}` };
+          }
+        }
+      } else {
+        return { isValid: false, error: `${fieldName} must be a string or array of strings` };
+      }
+      return { isValid: true };
+    };
+
+    // Validate 'to' field
+    const toValidation = validateEmailOrArray(to, 'recipient');
+    if (!toValidation.isValid) return toValidation;
+
+    // Validate 'from' field (always single email)
+    if (!emailRegex.test(from)) {
+      return { isValid: false, error: `Invalid sender email address: ${from}` };
+    }
+
+    // Validate 'cc' field if provided
+    if (cc !== undefined) {
+      const ccValidation = validateEmailOrArray(cc, 'cc');
+      if (!ccValidation.isValid) return ccValidation;
+    }
+
+    // Validate 'bcc' field if provided
+    if (bcc !== undefined) {
+      const bccValidation = validateEmailOrArray(bcc, 'bcc');
+      if (!bccValidation.isValid) return bccValidation;
+    }
+
+    return { isValid: true };
   }
 }
 

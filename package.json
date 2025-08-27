@@ -1,16 +1,33 @@
 {
   "name": "mailblock",
-  "version": "0.1.0",
-  "description": "Reserved package name for the Mailblock email SDK.",
+  "version": "2.0.0",
+  "description": "Official Node.js SDK for Mailblock - send, schedule, cancel and update emails with ease",
   "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/5ysc4ll/mailblock.git"
+  },
+  "bugs": {
+    "url": "https://github.com/5ysc4ll/mailblock/issues"
+  },
+  "homepage": "https://github.com/5ysc4ll/mailblock#readme",
   "keywords": [
     "email",
     "sdk",
     "mailblock",
-    "cold-email"
+    "cold-email",
+    "scheduling",
+    "email-api"
   ],
   "author": "Block Forge",
   "license": "MIT",
@@ -18,7 +35,8 @@
   "devDependencies": {
     "@types/node": "^20.0.0",
     "claude": "^0.1.1",
-    "typescript": "^5.0.0",
-    "ts-node": "^10.9.2"
+    "dotenv": "^17.2.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.0.0"
   }
 }

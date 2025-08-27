@@ -28,6 +28,9 @@ await client.email()
 - **🚀 2-minute setup** - No complex configuration needed
 - **⛓️ Method chaining** - Write clean, readable code
 - **📅 Built-in scheduling** - Send emails later without cron jobs
+- **🗑️ Email cancellation** - Cancel scheduled emails before they're sent
+- **📝 Email updates** - Modify scheduled emails on the fly
+- **📧 CC/BCC support** - Send to multiple recipients with ease
 - **🔍 Debug mode** - See exactly what's happening with your emails
 - **📘 TypeScript first** - Full type safety out of the box
 - **🎯 99.9% delivery rate** - Pre-warmed domains for optimal deliverability
@@ -123,6 +126,80 @@ await client.email()
   .send();
 ```
 
+## 📧 CC and BCC Support
+
+Send emails to multiple recipients with CC and BCC:
+
+```javascript
+// Using object style
+await client.sendEmail({
+  to: ['user1@example.com', 'user2@example.com'],
+  cc: 'manager@example.com',
+  bcc: ['admin@example.com', 'archive@example.com'],
+  from: 'noreply@yourapp.com',
+  subject: 'Team Update',
+  text: 'Important team announcement'
+});
+
+// Using method chaining
+await client.email()
+  .to(['primary@example.com', 'secondary@example.com'])
+  .cc(['supervisor@example.com'])
+  .bcc('audit@example.com')
+  .from('system@yourapp.com')
+  .subject('System Notification')
+  .html('<p>System maintenance scheduled for tonight.</p>')
+  .send();
+```
+
+## 🗑️ Email Cancellation
+
+Cancel scheduled emails before they're sent:
+
+```javascript
+// Cancel a single email
+const cancelResult = await client.cancelEmail('email-id-123');
+
+if (cancelResult.success) {
+  console.log('Email cancelled successfully');
+  console.log('Previous status:', cancelResult.data.previous_status);
+  console.log('Current status:', cancelResult.data.current_status);
+}
+
+// Cancel multiple emails at once
+const emailIds = ['id-1', 'id-2', 'id-3'];
+const bulkResult = await client.cancelEmails(emailIds);
+
+if (bulkResult.success) {
+  console.log(`Cancelled ${bulkResult.data.success_count} emails`);
+  console.log(`Failed to cancel ${bulkResult.data.error_count} emails`);
+}
+```
+
+## 📝 Update Scheduled Emails
+
+Modify scheduled emails before they're sent:
+
+```javascript
+// Update email content
+await client.updateScheduledEmail('email-id-123', {
+  subject: 'Updated: Meeting Postponed',
+  body_text: 'The meeting has been moved to next week.',
+  body_html: '<p><strong>Updated:</strong> The meeting has been moved to next week.</p>'
+});
+
+// Reschedule an email
+await client.updateScheduledEmail('email-id-456', {
+  scheduled_at: new Date(Date.now() + 7200000) // Send in 2 hours instead
+});
+
+// Convert scheduled email to immediate send
+await client.updateScheduledEmail('email-id-789', {
+  scheduled_at: null, // Send immediately
+  subject: 'Urgent: Sending Now!'
+});
+```
+
 ## 🐛 Debug Mode
 
 Enable debug mode during development to see detailed request logs:
@@ -170,18 +247,38 @@ if (!result.success) {
 Mailblock includes full TypeScript support out of the box:
 
 ```typescript
-import Mailblock, { EmailOptions, EmailResponse } from 'mailblock';
+import Mailblock, { 
+  EmailOptions, 
+  EmailResponse, 
+  CancelEmailResponse, 
+  UpdateEmailOptions 
+} from 'mailblock';
 
 const client: Mailblock = new Mailblock('your-api-key');
 
+// Send email with full type safety
 const emailOptions: EmailOptions = {
-  to: 'recipient@example.com',
+  to: ['recipient@example.com', 'cc@example.com'],
+  cc: 'manager@example.com',
+  bcc: ['audit@example.com'],
   from: 'sender@yourapp.com',
   subject: 'TypeScript Email',
   text: 'This email was sent with full type safety!'
 };
 
 const result: EmailResponse = await client.sendEmail(emailOptions);
+
+// Cancel email with typed response
+const cancelResult: CancelEmailResponse = await client.cancelEmail('email-id');
+
+// Update email with typed options
+const updates: UpdateEmailOptions = {
+  subject: 'Updated Subject',
+  body_text: 'New content',
+  scheduled_at: new Date(Date.now() + 3600000)
+};
+
+await client.updateScheduledEmail('email-id', updates);
 ```
 
 ## 📚 Documentation
@@ -199,6 +296,8 @@ const result: EmailResponse = await client.sendEmail(emailOptions);
 | **API Design** | Method chaining + object style | Object style only |
 | **TypeScript** | Built-in, full support | Add-on or limited |
 | **Scheduling** | Native support | External service needed |
+| **Email Management** | Cancel + update scheduled emails | Send only |
+| **Recipients** | CC/BCC with arrays | Limited support |
 | **Debug Mode** | Built-in logging | Manual implementation |
 | **Documentation** | Developer-focused | Marketing-heavy |
 | **Pricing** | Pay per email | Monthly fees + overages |
@@ -206,10 +305,10 @@ const result: EmailResponse = await client.sendEmail(emailOptions);
 ## 🚀 Coming Soon
 
 - **Email templates** - Pre-built responsive templates
-- **Bulk sending** - Send to multiple recipients efficiently  
 - **Webhooks** - Real-time delivery notifications
 - **Analytics** - Open rates, click tracking, bounces
 - **Attachments** - Send files with your emails
+- **Email validation** - Verify email addresses before sending
 
 ## 🤝 Contributing
 
